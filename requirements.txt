@@ -2,5 +2,6 @@ dwave-ocean-sdk>=5.3.0
 scikit-learn>=1.6.1
 openml==0.15.1
 pandas>=2.3.1
-dash==3.2.0
+dash[diskcache]~=3.0
 dwave-scikit-learn-plugin==0.2.0
+multiprocess==0.70.18
