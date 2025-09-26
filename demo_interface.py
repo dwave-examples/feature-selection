@@ -133,12 +133,12 @@ def generate_settings_form() -> html.Div:
             ),
             slider(
                 label="Number of Features",
-                id="features",
+                id="num-features",
                 config=NFEATURES,
             ),
             slider(
                 label="Redundancy Penalty",
-                id="redund",
+                id="redundancy-penalty",
                 config=REDUNDANCY,
             ),
             dropdown(
@@ -167,81 +167,6 @@ def generate_run_buttons() -> html.Div:
                 children="Cancel Optimization",
                 n_clicks=0,
                 className="display-none",
-            ),
-        ],
-    )
-
-
-def generate_problem_details_table_rows(solver: str, time_limit: int) -> list[html.Tr]:
-    """Generates table rows for the problem details table.
-
-    Args:
-        solver: The solver used for optimization.
-        time_limit: The solver time limit.
-
-    Returns:
-        list[html.Tr]: List of rows for the problem details table.
-    """
-
-    table_rows = (
-        ("Solver:", solver, "Time Limit:", f"{time_limit}s"),
-        ### Add more table rows here. Each tuple is a row in the table.
-    )
-
-    return [html.Tr([html.Td(cell) for cell in row]) for row in table_rows]
-
-
-def problem_details(index: int) -> html.Div:
-    """Generate the problem details section.
-
-    Args:
-        index: Unique element id to differentiate matching elements.
-            Must be different from left column collapse button.
-
-    Returns:
-        html.Div: Div containing a collapsable table.
-    """
-    return html.Div(
-        id={"type": "to-collapse-class", "index": index},
-        className="details-collapse-wrapper collapsed",
-        children=[
-            # Problem details collapsible button and header
-            html.Button(
-                id={"type": "collapse-trigger", "index": index},
-                className="details-collapse",
-                children=[
-                    html.H5("Problem Details"),
-                    html.Div(className="collapse-arrow"),
-                ],
-            ),
-            html.Div(
-                className="details-to-collapse",
-                children=[
-                    html.Table(
-                        className="solution-stats-table",
-                        children=[
-                            # Problem details table header (optional)
-                            html.Thead(
-                                [
-                                    html.Tr(
-                                        [
-                                            html.Th(
-                                                colSpan=2,
-                                                children=["Problem Specifics"],
-                                            ),
-                                            html.Th(
-                                                colSpan=2,
-                                                children=["Run Time"],
-                                            ),
-                                        ]
-                                    )
-                                ]
-                            ),
-                            # A Dash callback function will generate content in Tbody
-                            html.Tbody(id="problem-details"),
-                        ],
-                    ),
-                ],
             ),
         ],
     )
@@ -319,15 +244,16 @@ def create_interface():
                                                         parent_className="input",
                                                         type="circle",
                                                         color=THEME_COLOR_SECONDARY,
-                                                        delay_show=100,
+                                                        delay_show=150,
                                                         children=html.Div(
                                                             [
                                                                 dcc.Graph(
                                                                     id="input-graph",
-                                                                    responsive=False,
+                                                                    responsive=True,
                                                                     config={"displayModeBar": False},
                                                                 )
                                                             ],
+                                                            className="graph",
                                                         ),
                                                     ),
                                                 ]
@@ -353,21 +279,20 @@ def create_interface():
                                                         parent_className="results",
                                                         type="circle",
                                                         color=THEME_COLOR_SECONDARY,
-                                                        delay_show=100,
+                                                        delay_show=150,
                                                         children=html.Div(
                                                             [
                                                                 dcc.Graph(
                                                                     id="output-graph",
-                                                                    responsive=False,
+                                                                    responsive=True,
                                                                     config={
                                                                         "displayModeBar": False
                                                                     },
                                                                 ),
                                                             ],
+                                                            className="graph",
                                                         ),
                                                     ),
-                                                    # Problem details dropdown
-                                                    html.Div([html.Hr(), problem_details(1)]),
                                                 ],
                                             )
                                         ],

@@ -114,7 +114,6 @@ def draw_bar_chart(
         font=dict(size=GRAPH_FONT_SIZE),
         margin={"t": 0, "l": 0, "b": 0, "r": 0},
         yaxis_title="Feature Relevance to Outcome",
-        yaxis_range=[0, 1.1],
     )
 
     # Modify axis labels:
@@ -165,7 +164,6 @@ def draw_accuracy_bars(data: DataSet, selected_features: list, soln_score: float
         font=dict(size=GRAPH_FONT_SIZE),
         margin={"t": 0, "l": 0, "b": 0, "r": 0},
         xaxis_title="Num Features",
-        yaxis_range=[0, 1.1],
     )
 
     return fig
