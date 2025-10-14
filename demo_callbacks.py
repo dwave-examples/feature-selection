@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import NamedTuple, Union
+from typing import Union
 
 import dash
 from dash import MATCH, ctx
@@ -24,7 +24,6 @@ import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
 from data import DataSet
-from demo_interface import generate_problem_details_table_rows
 from src.demo_enums import SolverType
 from src.utils import draw_bar_chart, draw_accuracy_bars
 
@@ -57,9 +56,46 @@ def toggle_left_column(collapse_trigger: int, to_collapse_class: str) -> str:
 
 
 @dash.callback(
-    Output("features", "max"),
-    Output("features", "value"),
-    Output("features", "marks"),
+    Output("results-tab", "disabled"),
+    Output("tabs", "value"),
+    inputs=[
+        Input("dataset", "value"),
+        Input("num-features", "value"),
+        Input("redundancy-penalty", "value"),
+        Input("solver-type-select", "value"),
+        Input("solver-time-limit", "value"),
+    ],
+    prevent_initial_call=True,
+)
+def disable_results_tab(
+    data_set: str,
+    num_features: int,
+    redund_penalty: float,
+    solver_type: Union[SolverType, int],
+    time_limit: float,
+) -> tuple[bool, str]:
+    """Disables results tab when settings change.
+
+    Args:
+        data_set: The name of the dataset used.
+        num_features: The number of features to select.
+        redund_penalty: The redundancy penalty selected.
+        solver_type: The solver to use for the optimization run defined by SolverType in 
+            demo_enums.py.
+        time_limit: The solver time limit.
+
+    Returns:
+        bool: Whether to disable the results tab.
+        str: The tab to select.
+    """
+
+    return True, "input-tab"
+
+
+@dash.callback(
+    Output("num-features", "max"),
+    Output("num-features", "value"),
+    Output("num-features", "marks"),
     inputs=[
         Input("dataset", "value"),
     ],
@@ -97,27 +133,27 @@ def create_features_input(data_set: str) -> tuple[int, int, dict]:
         Input("input-redund", "value"),
     ],
 )
-def draw_input_graph(hover_data: dict, data_set: str, show_red: bool) -> go.Figure:
+def draw_input_graph(hover_data: dict, data_set: str, show_redundancy: bool) -> go.Figure:
     """Runs on load and any time the data set is updated. Displays the features in the data, with
-    a bar showing the relevance of each feature. If show_red is true, then hovering on each
+    a bar showing the relevance of each feature. If show_redundancy is true, then hovering on each
     feature's column shows the correlation between that feature and every other feature.
 
     Args:
         hover_data: Input information about user mouse location.
         data_set: The data set selected.
-        show_red: If we want to see redundancy.
+        show_redundancy: If we want to see redundancy.
 
     Returns:
         go.Figure: A Plotly figure object.
     """
 
-    if ctx.triggered_id == "input-graph" and not show_red:
+    if ctx.triggered_id == "input-graph" and not show_redundancy:
         raise PreventUpdate
 
     # Load the data set
     data = DataSet(data_set)
 
-    return draw_bar_chart(hover_data, None, data, show_red)
+    return draw_bar_chart(hover_data, None, data, show_redundancy)
 
 
 @dash.callback(
@@ -131,14 +167,14 @@ def draw_input_graph(hover_data: dict, data_set: str, show_red: bool) -> go.Figu
     ],
 )
 def draw_output_graph(
-    hover_data: dict, show_red: bool, selected_features: list, soln_score: float, data_set: str
+    hover_data: dict, show_redundancy: bool, selected_features: list, soln_score: float, data_set: str
 ) -> go.Figure:
     """Runs when the optimization step is complete. Displays the same bar graph as on the "Input"
     tab, with selected features solid/heavily outlined and unselected features semi-transparent.
 
     Args:
         hover_data: Input information about user mouse location.
-        show_red: If we want to see redundancy.
+        show_redundancy: If we want to see redundancy.
         selected_features: The features selected for the model.
         soln_score: The accuracy score for the model using the selected features.
         data_set: The data set selected.
@@ -147,7 +183,7 @@ def draw_output_graph(
         go.Figure: A Plotly figure object.
     """
 
-    if ctx.triggered_id == "output-graph" and not show_red:
+    if ctx.triggered_id == "output-graph" and not show_redundancy:
         raise PreventUpdate
 
     # Load the data set
@@ -161,7 +197,7 @@ def draw_output_graph(
         subplot_titles=("Selected Features", "Accuracy"),
     )
 
-    fig1 = draw_bar_chart(hover_data, selected_features, data, show_red)
+    fig1 = draw_bar_chart(hover_data, selected_features, data, show_redundancy)
     fig2 = draw_accuracy_bars(data, selected_features, soln_score)
 
     fig.add_trace(fig1["data"][0], row=1, col=1)
@@ -178,28 +214,15 @@ def draw_output_graph(
 
     fig.update_layout(
         showlegend=False,
-        yaxis_range=[0, 1.1],
         margin={"t": 30, "l": 0, "b": 0, "r": 0},
     )
 
     return fig
 
 
-class RunOptimizationReturn(NamedTuple):
-    """Return type for the ``run_optimization`` callback function."""
-
-    score: float = dash.no_update
-    features: list = dash.no_update
-    problem_details_table: list = dash.no_update
-    # Add more return variables here. Return values for callback functions
-    # with many variables should be returned as a NamedTuple for clarity.
-
-
 @dash.callback(
-    # The Outputs below must align with `RunOptimizationReturn`.
     Output("soln-score", "data"),
     Output("selected-features", "data"),
-    Output("problem-details", "children"),
     background=True,
     inputs=[
         # The first string in the Input/State elements below must match an id in demo_interface.py
@@ -207,8 +230,8 @@ class RunOptimizationReturn(NamedTuple):
         Input("run-button", "n_clicks"),
         State("solver-type-select", "value"),
         State("solver-time-limit", "value"),
-        State("features", "value"),
-        State("redund", "value"),
+        State("num-features", "value"),
+        State("redundancy-penalty", "value"),
         State("dataset", "value"),
     ],
     running=[
@@ -231,7 +254,7 @@ def run_optimization(
     num_features: int,
     redund_penalty: float,
     data_set: str,
-) -> RunOptimizationReturn:
+) -> tuple[float, list]:
     """Runs the optimization and updates UI accordingly.
 
     This is the main function which is called when the ``Run Optimization`` button is clicked.
@@ -249,11 +272,10 @@ def run_optimization(
         data_set: The name of the dataset used.
 
     Returns:
-        A NamedTuple (RunOptimizationReturn) containing all outputs to be used when updating the
-        HTML template (in ``demo_interface.py``). These are:
+        A tuple containing all outputs to be used when updating the HTML template
+        (in ``demo_interface.py``). These are:
             score: The accuracy score for the model built with the selected features.
             features: The features selected.
-            problem-details: List of the table rows for the problem details table.
     """
 
     print("solving...")
@@ -269,14 +291,5 @@ def run_optimization(
     print("solution:", solution)
     score = data.score_indices_cv(solution)
 
-    # Generates a list of table rows for the problem details table.
-    problem_details_table = generate_problem_details_table_rows(
-        solver=solver_type.label,
-        time_limit=time_limit,
-    )
+    return score, solution
 
-    return RunOptimizationReturn(
-        score=score,
-        features=solution,
-        problem_details_table=problem_details_table,
-    )

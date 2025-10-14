@@ -41,8 +41,12 @@ custom CSS can be added below.
     justify-content: center;
     align-items: center;
     height: 100%;
+    width: 100%;
+    padding: 2rem;
+    box-sizing: border-box;
 }
 
-  /****************************/
- /*** CUSTOM CSS GOES HERE ***/
-/****************************/
+.graph {
+    height: 100%;
+    width: 100%;
+}
