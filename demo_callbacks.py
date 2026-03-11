@@ -17,15 +17,15 @@ from __future__ import annotations
 from typing import Union
 
 import dash
+import plotly.graph_objs as go
 from dash import MATCH, ctx
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
 from data import DataSet
 from src.demo_enums import SolverType
-from src.utils import draw_bar_chart, draw_accuracy_bars
+from src.utils import draw_accuracy_bars, draw_bar_chart
 
 
 @dash.callback(
@@ -82,7 +82,7 @@ def disable_results_tab(
         data_set: The name of the dataset used.
         num_features: The number of features to select.
         redundancy_penalty: The redundancy penalty selected.
-        solver_type: The solver to use for the optimization run defined by SolverType in 
+        solver_type: The solver to use for the optimization run defined by SolverType in
             demo_enums.py.
         time_limit: The solver time limit.
 
@@ -128,7 +128,7 @@ def create_features_input(data_set: str) -> tuple[str, str, list[dict]]:
         {
             "value": max_feat_str,
             "label": max_feat_str,
-        }
+        },
     ]
 
     return max_feat_str, value, marks
@@ -176,7 +176,11 @@ def draw_input_graph(hover_data: dict, data_set: str, show_redundancy: bool) -> 
     ],
 )
 def draw_output_graph(
-    hover_data: dict, show_redundancy: bool, selected_features: list, solution_score: float, data_set: str
+    hover_data: dict,
+    show_redundancy: bool,
+    selected_features: list,
+    solution_score: float,
+    data_set: str,
 ) -> go.Figure:
     """Runs when the optimization step is complete. Displays the same bar graph as on the "Input"
     tab, with selected features solid/heavily outlined and unselected features semi-transparent.
@@ -273,7 +277,7 @@ def run_optimization(
 
     Args:
         run_click: The (total) number of times the run button has been clicked.
-        solver_type: The solver to use for the optimization run defined by SolverType in 
+        solver_type: The solver to use for the optimization run defined by SolverType in
             demo_enums.py.
         time_limit: The solver time limit.
         num_features: The number of features to select.
@@ -294,11 +298,12 @@ def run_optimization(
 
     data = DataSet(data_set)
 
-    solution = data.solve_feature_selection(int(num_features), 1.0 - float(redundancy_penalty), time_limit, solver)
+    solution = data.solve_feature_selection(
+        int(num_features), 1.0 - float(redundancy_penalty), time_limit, solver
+    )
 
     solution = [int(i) for i in solution]  # Avoid issues with json and int64
     print("solution:", solution)
     score = data.score_indices_cv(solution)
 
     return score, solution
-

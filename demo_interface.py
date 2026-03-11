@@ -13,21 +13,23 @@
 # limitations under the License.
 
 """This file stores the Dash HTML layout for the app."""
+
 from __future__ import annotations
+
 from enum import EnumMeta
 
-from dash import dcc, html
 import dash_mantine_components as dmc
+from dash import dcc, html
 
 from demo_configs import (
+    DATA_SETS,
     DESCRIPTION,
     MAIN_HEADER,
-    SHOW_REDUNDANCY,
     NFEATURES,
     REDUNDANCY,
+    SHOW_REDUNDANCY,
     SOLVER_TIME,
     THUMBNAIL,
-    DATA_SETS,
 )
 from src.demo_enums import SolverType
 
@@ -100,7 +102,7 @@ def checkbox(label: str, id: str, checked: bool) -> html.Div:
                 label=label,
                 checked=checked,
                 color=THEME_COLOR,
-            )    
+            )
         ],
     )
 
@@ -108,9 +110,7 @@ def checkbox(label: str, id: str, checked: bool) -> html.Div:
 def generate_options(options: list | EnumMeta) -> list[dict]:
     """Generates options for dropdowns, checklists, radios, etc."""
     if isinstance(options, EnumMeta):
-        return [
-            {"label": option.label, "value": f"{option.value}"} for option in options
-        ]
+        return [{"label": option.label, "value": f"{option.value}"} for option in options]
 
     return [{"label": option, "value": f"{option}"} for option in options]
 
@@ -285,30 +285,35 @@ def create_interface():
                                             html.Div(
                                                 className="tab-content-wrapper",
                                                 children=[
-                                                    html.Div([
-                                                        checkbox(
-                                                            SHOW_REDUNDANCY,
-                                                            "input-redundancy",
-                                                            False,
-                                                        ),
-                                                        dcc.Loading(
-                                                            parent_className="input",
-                                                            type="circle",
-                                                            color=THEME_COLOR,
-                                                            delay_show=150,
-                                                            children=html.Div(
-                                                                [
-                                                                    dcc.Graph(
-                                                                        id="input-graph",
-                                                                        responsive=True,
-                                                                        config={"displayModeBar": False},
-                                                                    )
-                                                                ],
-                                                                className="graph",
+                                                    html.Div(
+                                                        [
+                                                            checkbox(
+                                                                SHOW_REDUNDANCY,
+                                                                "input-redundancy",
+                                                                False,
                                                             ),
-                                                        ),
-                                                    ], className="tab-content"),
-                                                ]
+                                                            dcc.Loading(
+                                                                parent_className="input",
+                                                                type="circle",
+                                                                color=THEME_COLOR,
+                                                                delay_show=150,
+                                                                children=html.Div(
+                                                                    [
+                                                                        dcc.Graph(
+                                                                            id="input-graph",
+                                                                            responsive=True,
+                                                                            config={
+                                                                                "displayModeBar": False
+                                                                            },
+                                                                        )
+                                                                    ],
+                                                                    className="graph",
+                                                                ),
+                                                            ),
+                                                        ],
+                                                        className="tab-content",
+                                                    ),
+                                                ],
                                             )
                                         ],
                                     ),
@@ -319,31 +324,34 @@ def create_interface():
                                             html.Div(
                                                 className="tab-content-wrapper",
                                                 children=[
-                                                    html.Div([
-                                                        checkbox(
-                                                            SHOW_REDUNDANCY,
-                                                            "results-redundancy",
-                                                            False,
-                                                        ),
-                                                        dcc.Loading(
-                                                            parent_className="results",
-                                                            type="circle",
-                                                            color=THEME_COLOR,
-                                                            delay_show=150,
-                                                            children=html.Div(
-                                                                [
-                                                                    dcc.Graph(
-                                                                        id="output-graph",
-                                                                        responsive=True,
-                                                                        config={
-                                                                            "displayModeBar": False
-                                                                        },
-                                                                    ),
-                                                                ],
-                                                                className="graph",
+                                                    html.Div(
+                                                        [
+                                                            checkbox(
+                                                                SHOW_REDUNDANCY,
+                                                                "results-redundancy",
+                                                                False,
                                                             ),
-                                                        ),
-                                                    ], className="tab-content"),
+                                                            dcc.Loading(
+                                                                parent_className="results",
+                                                                type="circle",
+                                                                color=THEME_COLOR,
+                                                                delay_show=150,
+                                                                children=html.Div(
+                                                                    [
+                                                                        dcc.Graph(
+                                                                            id="output-graph",
+                                                                            responsive=True,
+                                                                            config={
+                                                                                "displayModeBar": False
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                    className="graph",
+                                                                ),
+                                                            ),
+                                                        ],
+                                                        className="tab-content",
+                                                    ),
                                                 ],
                                             )
                                         ],

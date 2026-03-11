@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pickle
 import os
+import pickle
 
 import numpy as np
-import pandas as pd
 import openml
-
+import pandas as pd
+from dwave.plugins.sklearn.transformers import SelectFromQuadraticModel
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
-
-from dwave.plugins.sklearn.transformers import SelectFromQuadraticModel
 
 
 class DataSetBase:

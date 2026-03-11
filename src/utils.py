@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+
 import numpy as np
 import pandas as pd
-from plotly.colors import sample_colorscale
 import plotly.graph_objs as go
-from typing import Optional
+from plotly.colors import sample_colorscale
 
 from data import DataSet
 from demo_configs import COLOR_SCALE, GRAPH_FONT_SIZE
@@ -88,7 +89,6 @@ def draw_bar_chart(
 
             if data.n < 30:
                 display_text = [round(i.item(), 2) for i in color_data]
-
 
     # Plot the bar graph
     fig = go.Figure(

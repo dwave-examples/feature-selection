@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
 import unittest
 from unittest.mock import patch
+
+import numpy as np
 from parameterized import parameterized
+
 import data
 
 
