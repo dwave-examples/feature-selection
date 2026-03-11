@@ -4,8 +4,8 @@
 
 # Feature Selection Using Hybrid Quantum Solvers
 
-This demo showcases feature selection using a nonlinear (NL) model
-or a constrained quadratic model (CQM) via
+This demo showcases feature selection using D-Wave's Stride hybrid solver
+or a constrained quadratic model (CQM) solver via
 [D-Wave's scikit-learn plug-in](https://github.com/dwavesystems/dwave-scikit-learn-plugin).
 
 ![Demo Example](static/demo.png)
@@ -25,7 +25,7 @@ The demo can be used with two different datasets:
   illustrates the impact of feature redundancy.
 
 ---
-**Note:** This example solves a CQM or NL model on a Leap&trade; quantum-classical
+**Note:** This example solves a CQM or nonlinear model on a Leap&trade; quantum-classical
 [hybrid solver](https://docs.dwavequantum.com/en/latest/concepts/hybrid.html).
 The [MIQUBO Method of Feature Selection](https://github.com/dwave-examples/mutual-information-feature-selection)
 example solves this same problem using a
@@ -109,7 +109,7 @@ to promote a strong relationship.
 
 ## Model Overview
 
-In this example we use the Titanic and Scene datasets to generate a CQM or NL model. 
+In this example we use the Titanic and Scene datasets to generate a CQM or nonlinear model. 
 The datasets are assumed to be clean, meaning there are no missing entries or repeated features. 
 The features of the dataset are used to build a correlation matrix which compares the features to 
 each other as well as a correlation matrix that compares the features to the target variable. Those 
@@ -127,7 +127,7 @@ the feature selection model is contained within
 These are the parameters of the problem:
 
 - `num_features`: the number of features to select 
-- `redund_value`: used to determine factor applied to redundancy terms
+- `redundancy_value`: used to determine factor applied to redundancy terms
   - 0: features will be selected as to minimize the redundancy without any consideration to quality
   - 1: places the maximum weight on the quality of the features
 
@@ -136,7 +136,7 @@ These are the parameters of the problem:
 
 ### Objective
 The objective function has two terms. The first term minimizes the correlation between 
-chosen features in the dataset (this term is weighted by the redundancy parameter, `redund_val`). The 
+chosen features in the dataset (this term is weighted by the redundancy parameter, `redundancy_val`). The 
 second term maximizes the correlation between the features and the target variable. 
 
 ### Constraints
@@ -145,7 +145,7 @@ parameter.
 
 ## Code Overview
 
-Given a selected value for the `num_features` and `redund_value` sliders, the code proceeds as follows:
+Given a selected value for the `num_features` and `redundancy_value` sliders, the code proceeds as follows:
 
 * The selected dataset and parameters are passed to D-Wave's feature selection scikit-learn plugin
 * The resulting selected features are returned from the plugin

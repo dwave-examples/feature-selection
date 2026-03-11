@@ -62,6 +62,7 @@ def draw_bar_chart(
     if data.n < 50:
         mlw[selected_features] = 3
 
+    rgba_colors = [f"rgba(42, 125, 225, {o})" for o in opacity]
     # Manually calculate the continuous color map to show redundancy.
     # This is required for different opacity levels per bar.
     if hover_data and show_redundancy:
@@ -76,19 +77,18 @@ def draw_bar_chart(
             df["Redundancy"] = redundancy_data[idx]
             hover_cols["Redundancy"] = False
 
-        color_data = df["Redundancy"].values
-        normalized_color_data = (color_data - np.min(color_data)) / (
-            np.max(color_data) - np.min(color_data)
-        )
-        rgba_colors = sample_colorscale(COLOR_SCALE, normalized_color_data, colortype="rgb")
+            color_data = df["Redundancy"].values
+            normalized_color_data = (color_data - np.min(color_data)) / (
+                np.max(color_data) - np.min(color_data)
+            )
+            rgba_colors = sample_colorscale(COLOR_SCALE, normalized_color_data, colortype="rgb")
 
-        for i in range(len(rgba_colors)):
-            rgba_colors[i] = "rgba" + rgba_colors[i][3:-1] + ", " + str(opacity[i]) + ")"
+            for i in range(len(rgba_colors)):
+                rgba_colors[i] = "rgba" + rgba_colors[i][3:-1] + ", " + str(opacity[i]) + ")"
 
-        if data.n < 30:
-            display_text = [round(i.item(), 2) for i in color_data]
-    else:
-        rgba_colors = [f"rgba(42, 125, 225, {o})" for o in opacity]
+            if data.n < 30:
+                display_text = [round(i.item(), 2) for i in color_data]
+
 
     # Plot the bar graph
     fig = go.Figure(
@@ -104,7 +104,6 @@ def draw_bar_chart(
 
     fig.update_traces(
         marker_color=rgba_colors,
-        marker_line_color="black",
         marker_line_width=mlw,
         hoverinfo="none",
         hovertemplate=None,
@@ -125,13 +124,13 @@ def draw_bar_chart(
     return fig
 
 
-def draw_accuracy_bars(data: DataSet, selected_features: list, soln_score: float) -> go.Figure:
+def draw_accuracy_bars(data: DataSet, selected_features: list, solution_score: float) -> go.Figure:
     """Draws the accuracy bar chart for output.
 
     Args:
         data: The DataSet object for the given data set.
         selected_features: Solution (if available). If not available then None.
-        soln_score: Accuracy score for model using selected_features.
+        solution_score: Accuracy score for model using selected_features.
 
     Returns:
         go.Figure: A Plotly figure object comparing the accuracy of using all features vs only the
@@ -139,7 +138,7 @@ def draw_accuracy_bars(data: DataSet, selected_features: list, soln_score: float
 
     """
 
-    scores = [round(data.baseline_cv_score, 2), round(soln_score, 2)]
+    scores = [round(data.baseline_cv_score, 2), round(solution_score, 2)]
 
     fig = go.Figure(
         data=[
@@ -154,7 +153,6 @@ def draw_accuracy_bars(data: DataSet, selected_features: list, soln_score: float
 
     fig.update_traces(
         marker_color=[COLOR_SCALE[1], COLOR_SCALE[-1]],
-        marker_line_color="black",
         marker_line_width=1,
         hoverinfo="none",
         hovertemplate=None,

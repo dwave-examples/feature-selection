@@ -101,7 +101,7 @@ class DataSetBase:
             time (int):
                 Number of seconds for solver to run.
             solver (str):
-                String dictating use of either CQM or NL.
+                String dictating use of either CQM or Stride.
 
         Returns:
             Array of indices of selected features.

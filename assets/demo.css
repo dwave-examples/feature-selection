@@ -20,20 +20,18 @@ The following style rules can be altered or removed and any additional
 custom CSS can be added below.
 *******************************************************************/
 
-.tab-content-results {
-    padding: 0 3rem;
+.tab-content-wrapper {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
 }
 
-.solution-stats-table td:nth-child(2n) {
-    text-align: right;
-}
-
-.solution-stats-table td:nth-child(2n+1) {
-    border-right: none;
+.tab-content {
+    margin: 2rem 3rem 4rem 2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .input, .results {
@@ -42,11 +40,13 @@ custom CSS can be added below.
     align-items: center;
     height: 100%;
     width: 100%;
-    padding: 2rem;
-    box-sizing: border-box;
 }
 
 .graph {
     height: 100%;
     width: 100%;
+}
+
+.checklist-wrapper {
+    padding: 0 0 1rem 3rem;
 }
