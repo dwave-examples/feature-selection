@@ -4,11 +4,11 @@
 
 # Feature Selection Using Hybrid Quantum Solvers
 
-This demo showcases feature selection using D-Wave's Stride hybrid solver
+This demo showcases feature selection using D-Wave's Stride&trade; hybrid solver
 or a constrained quadratic model (CQM) solver via
 [D-Wave's scikit-learn plug-in](https://github.com/dwavesystems/dwave-scikit-learn-plugin).
 
-![Demo Example](static/demo.png)
+![Demo Example](static/demo.png "Image of demo interface")
 
 The demo can be used with two different datasets:
 
