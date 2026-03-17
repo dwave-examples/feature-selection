@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pickle
 import os
+import pickle
 
 import numpy as np
-import pandas as pd
 import openml
-
+import pandas as pd
+from dwave.plugins.sklearn.transformers import SelectFromQuadraticModel
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
-
-from dwave.plugins.sklearn.transformers import SelectFromQuadraticModel
 
 
 class DataSetBase:
@@ -101,7 +99,7 @@ class DataSetBase:
             time (int):
                 Number of seconds for solver to run.
             solver (str):
-                String dictating use of either CQM or NL.
+                String dictating use of either CQM or Stride.
 
         Returns:
             Array of indices of selected features.

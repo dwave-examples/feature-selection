@@ -17,26 +17,27 @@ from __future__ import annotations
 from typing import Union
 
 import dash
+import plotly.graph_objs as go
 from dash import MATCH, ctx
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
 from data import DataSet
 from src.demo_enums import SolverType
-from src.utils import draw_bar_chart, draw_accuracy_bars
+from src.utils import draw_accuracy_bars, draw_bar_chart
 
 
 @dash.callback(
     Output({"type": "to-collapse-class", "index": MATCH}, "className"),
+    Output({"type": "collapse-trigger", "index": MATCH}, "aria-expanded"),
     inputs=[
         Input({"type": "collapse-trigger", "index": MATCH}, "n_clicks"),
         State({"type": "to-collapse-class", "index": MATCH}, "className"),
     ],
     prevent_initial_call=True,
 )
-def toggle_left_column(collapse_trigger: int, to_collapse_class: str) -> str:
+def toggle_left_column(collapse_trigger: int, to_collapse_class: str) -> tuple[str, str]:
     """Toggles a 'collapsed' class that hides and shows some aspect of the UI.
 
     Args:
@@ -46,13 +47,14 @@ def toggle_left_column(collapse_trigger: int, to_collapse_class: str) -> str:
 
     Returns:
         str: The new class name of the thing to collapse.
+        str: The aria-expanded value.
     """
 
     classes = to_collapse_class.split(" ") if to_collapse_class else []
     if "collapsed" in classes:
         classes.remove("collapsed")
-        return " ".join(classes)
-    return to_collapse_class + " collapsed" if to_collapse_class else "collapsed"
+        return " ".join(classes), "true"
+    return to_collapse_class + " collapsed" if to_collapse_class else "collapsed", "false"
 
 
 @dash.callback(
@@ -69,9 +71,9 @@ def toggle_left_column(collapse_trigger: int, to_collapse_class: str) -> str:
 )
 def disable_results_tab(
     data_set: str,
-    num_features: int,
-    redund_penalty: float,
-    solver_type: Union[SolverType, int],
+    num_features: str,
+    redundancy_penalty: str,
+    solver_type: Union[SolverType, str],
     time_limit: float,
 ) -> tuple[bool, str]:
     """Disables results tab when settings change.
@@ -79,8 +81,8 @@ def disable_results_tab(
     Args:
         data_set: The name of the dataset used.
         num_features: The number of features to select.
-        redund_penalty: The redundancy penalty selected.
-        solver_type: The solver to use for the optimization run defined by SolverType in 
+        redundancy_penalty: The redundancy penalty selected.
+        solver_type: The solver to use for the optimization run defined by SolverType in
             demo_enums.py.
         time_limit: The solver time limit.
 
@@ -100,7 +102,7 @@ def disable_results_tab(
         Input("dataset", "value"),
     ],
 )
-def create_features_input(data_set: str) -> tuple[int, int, dict]:
+def create_features_input(data_set: str) -> tuple[str, str, list[dict]]:
     """Updates the max, marks, and default value of the Number of Features slider on load and any
     time the data set is updated.
 
@@ -110,19 +112,26 @@ def create_features_input(data_set: str) -> tuple[int, int, dict]:
     Returns:
         int: The maximum value for the number of features slider.
         int: The default value for the number of features slider.
-        dict: The marks for the slider to display min/max values.
+        list[dict]: The marks for the slider to display min/max values.
     """
     data = DataSet(data_set)
     max_feat = data.n
 
-    value = round(max_feat / 2)
+    value = str(round(max_feat / 2))
+    max_feat_str = str(max_feat)
 
-    marks = {
-        1: "1",
-        max_feat: str(max_feat),
-    }
+    marks = [
+        {
+            "value": "1",
+            "label": "1",
+        },
+        {
+            "value": max_feat_str,
+            "label": max_feat_str,
+        },
+    ]
 
-    return max_feat, value, marks
+    return max_feat_str, value, marks
 
 
 @dash.callback(
@@ -130,7 +139,7 @@ def create_features_input(data_set: str) -> tuple[int, int, dict]:
     inputs=[
         Input("input-graph", "hoverData"),
         Input("dataset", "value"),
-        Input("input-redund", "value"),
+        Input("input-redundancy", "checked"),
     ],
 )
 def draw_input_graph(hover_data: dict, data_set: str, show_redundancy: bool) -> go.Figure:
@@ -160,14 +169,18 @@ def draw_input_graph(hover_data: dict, data_set: str, show_redundancy: bool) -> 
     Output("output-graph", "figure"),
     inputs=[
         Input("output-graph", "hoverData"),
-        Input("results-redund", "value"),
+        Input("results-redundancy", "checked"),
         Input("selected-features", "data"),
-        Input("soln-score", "data"),
+        Input("solution-score", "data"),
         State("dataset", "value"),
     ],
 )
 def draw_output_graph(
-    hover_data: dict, show_redundancy: bool, selected_features: list, soln_score: float, data_set: str
+    hover_data: dict,
+    show_redundancy: bool,
+    selected_features: list,
+    solution_score: float,
+    data_set: str,
 ) -> go.Figure:
     """Runs when the optimization step is complete. Displays the same bar graph as on the "Input"
     tab, with selected features solid/heavily outlined and unselected features semi-transparent.
@@ -176,7 +189,7 @@ def draw_output_graph(
         hover_data: Input information about user mouse location.
         show_redundancy: If we want to see redundancy.
         selected_features: The features selected for the model.
-        soln_score: The accuracy score for the model using the selected features.
+        solution_score: The accuracy score for the model using the selected features.
         data_set: The data set selected.
 
     Returns:
@@ -198,7 +211,7 @@ def draw_output_graph(
     )
 
     fig1 = draw_bar_chart(hover_data, selected_features, data, show_redundancy)
-    fig2 = draw_accuracy_bars(data, selected_features, soln_score)
+    fig2 = draw_accuracy_bars(data, selected_features, solution_score)
 
     fig.add_trace(fig1["data"][0], row=1, col=1)
     fig.add_trace(fig2["data"][0], row=1, col=2)
@@ -221,7 +234,7 @@ def draw_output_graph(
 
 
 @dash.callback(
-    Output("soln-score", "data"),
+    Output("solution-score", "data"),
     Output("selected-features", "data"),
     background=True,
     inputs=[
@@ -235,10 +248,10 @@ def draw_output_graph(
         State("dataset", "value"),
     ],
     running=[
-        (Output("cancel-button", "className"), "", "display-none"),  # Show/hide cancel button.
-        (Output("run-button", "className"), "display-none", ""),  # Hides run button while running.
+        (Output("cancel-button", "style"), {}, {"display": "none"}),  # Show/hide cancel button.
+        (Output("run-button", "style"), {"display": "none"}, {}),  # Hides run button while running.
         (Output("results-tab", "disabled"), True, False),  # Disables results tab while running.
-        (Output("results-tab", "label"), "Loading...", "Results"),
+        (Output("results-tab", "children"), "Loading...", "Results"),
         (Output("tabs", "value"), "input-tab", "input-tab"),  # Switch to input tab while running.
         (Output("run-in-progress", "data"), True, False),  # Can block certain callbacks.
     ],
@@ -249,10 +262,10 @@ def run_optimization(
     # The parameters below must match the `Input` and `State` variables found
     # in the `inputs` list above.
     run_click: int,
-    solver_type: Union[SolverType, int],
+    solver_type: Union[SolverType, str],
     time_limit: float,
-    num_features: int,
-    redund_penalty: float,
+    num_features: str,
+    redundancy_penalty: str,
     data_set: str,
 ) -> tuple[float, list]:
     """Runs the optimization and updates UI accordingly.
@@ -264,11 +277,11 @@ def run_optimization(
 
     Args:
         run_click: The (total) number of times the run button has been clicked.
-        solver_type: The solver to use for the optimization run defined by SolverType in 
+        solver_type: The solver to use for the optimization run defined by SolverType in
             demo_enums.py.
         time_limit: The solver time limit.
         num_features: The number of features to select.
-        redund_penalty: The redundancy penalty selected.
+        redundancy_penalty: The redundancy penalty selected.
         data_set: The name of the dataset used.
 
     Returns:
@@ -280,16 +293,17 @@ def run_optimization(
 
     print("solving...")
 
-    solver_type = SolverType(solver_type)
+    solver_type = SolverType(int(solver_type))
     solver = "cqm" if solver_type is SolverType.CQM else "nl"
 
     data = DataSet(data_set)
 
-    solution = data.solve_feature_selection(num_features, 1.0 - redund_penalty, time_limit, solver)
+    solution = data.solve_feature_selection(
+        int(num_features), 1.0 - float(redundancy_penalty), time_limit, solver
+    )
 
     solution = [int(i) for i in solution]  # Avoid issues with json and int64
     print("solution:", solution)
     score = data.score_indices_cv(solution)
 
     return score, solution
-

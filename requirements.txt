@@ -1,6 +1,9 @@
-dash[diskcache]~=3.2
-dwave-ocean-sdk~=9.0
+dash[diskcache]~=4.0
+dash-mantine-components~=2.5
+dwave-ocean-sdk~=9.3
 dwave-scikit-learn-plugin~=0.2
+numpy==2.4.1; python_version >= '3.14'
+numpy==2.2.6; python_version < '3.14'
 openml~=0.15
 pandas~=2.3
 scikit-learn~=1.7
